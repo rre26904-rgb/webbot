@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة ألعاب رائد</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="hubScreen" class="screen active">
+            <header class="hub-header">
+                <h1 class="logo">🎮 منصة الألعاب</h1>
+                <p>اختر اللعبة، العب بالعام، أو افتح روم خاص لأخوياك!</p>
+            </header>
+
+            <div class="play-mode-selector">
+                <input type="text" id="username" placeholder="اكتب اسمك هنا أولاً...">
+                <button class="mode-btn global-chat-btn" onclick="joinGlobalChat()">🌍 دخول الشات العام (ألعاب سريعة)</button>
+                
+                <div class="private-room-box" style="margin-top: 15px;">
+                    <input type="text" id="roomId" placeholder="رمز الغرفة (للرومات الخاصة)">
+                    <button class="mode-btn private-btn" onclick="joinRoom()">🔒 إنشاء / انضمام لغرفة خاصة</button>
+                </div>
+            </div>
+
+            <div class="games-grid">
+                <div class="game-card" onclick="alert('ادخل روم خاص أول عشان تلعب برا السالفة!')">
+                    <div class="game-icon">🕵️‍♂️</div>
+                    <h3>برا السالفة</h3>
+                    <p>طلع المندس من بينكم!</p>
+                </div>
+                <div class="game-card">
+                    <div class="game-icon">🔠</div>
+                    <h3>حروف</h3>
+                    <p>كم عدد حروف الكلمة؟</p>
+                </div>
+                </div>
+        </div>
+
+        <div id="globalChatScreen" class="screen">
+            <div class="chat-header">
+                <button class="back-btn" onclick="goBackToHub()">🔙 رجوع</button>
+                <h2>الشات العام والألعاب 🌍</h2>
+            </div>
+            
+            <div id="chatMessages" class="chat-messages">
+                <div class="system-msg">مرحباً بك في الشات العام! الألعاب السريعة ستبدأ هنا تلقائياً.</div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="اكتب رسالتك أو جوابك هنا..." onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()" class="send-btn">إرسال 🚀</button>
+            </div>
+        </div>
+
+        </div>
+
+    <footer style="position: fixed; bottom: 15px; left: 0; right: 0; text-align: center; color: #888; font-size: 14px; font-weight: bold; pointer-events: none; z-index: 1000;">
+        هذي المنصة من إنتاج رائد البارقي 💻
+    </footer>
+</body>
+</html>
