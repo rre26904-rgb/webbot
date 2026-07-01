@@ -32,6 +32,19 @@ const App = () => {
     setCurrentView('room');
   };
 
+  // إصلاح زر الانضمام وتفعيله
+  const handleJoinRoom = (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) {
+      alert("الرجاء كتابة رمز الغرفة!");
+      return;
+    }
+    // في الوضع الفعلي، هنا السيرفر يعطينا اللعبة.. حالياً بنسحب لعبة افتراضية عشان ما يعلق
+    const fallbackGame = gamesList[0]; 
+    setRoomInfo({ code: joinCode, game: fallbackGame, isHost: false });
+    setCurrentView('room');
+  };
+
   if (!currentUser) return <Login onLogin={handleLogin} />;
 
   return (
@@ -53,10 +66,11 @@ const App = () => {
               <span className="text-[#FF2400] font-bold">👤</span>
               <span className="text-white font-bold text-lg">{currentUser.username}</span>
             </div>
-            <div className="flex items-center gap-2 px-2">
+            {/* فورم الانضمام مفعل */}
+            <form onSubmit={handleJoinRoom} className="flex items-center gap-2 px-2">
               <input type="text" placeholder="رمز الغرفة" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} className="bg-transparent text-white px-2 py-1 outline-none w-28 text-center tracking-widest placeholder-gray-700" />
-              <button className="bg-[#FF2400] text-black font-black px-4 py-1.5 rounded-lg active:scale-95 hover:bg-white transition-all">انضمام</button>
-            </div>
+              <button type="submit" className="bg-[#FF2400] text-black font-black px-4 py-1.5 rounded-lg active:scale-95 hover:bg-white transition-all">انضمام</button>
+            </form>
             <button onClick={handleLogout} className="px-4 text-gray-500 hover:text-red-500 font-bold transition-colors">خروج</button>
           </div>
         </div>
@@ -83,7 +97,7 @@ const App = () => {
                   </div>
                   
                   <button onClick={() => handleCreateRoom(game)} className="relative z-10 w-full py-4 border-2 border-[#FF2400]/30 text-[#FF2400] font-black rounded-xl active:scale-95 group-hover:border-[#FF2400] group-hover:bg-[#FF2400] group-hover:text-black transition-all duration-300 text-lg">
-                    بدء التحدي 🚀
+                    إنشاء الغرفة 🚀
                   </button>
                 </div>
               ))}
