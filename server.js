@@ -13,25 +13,55 @@ const io = new Server(server, {
 
 const rooms = {};
 
+// دالة لخلط مصفوفة الأسئلة عشوائياً لضمان عدم تكرار الترتيب
+function shuffleArray(array) {
+    let shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 io.on('connection', (socket) => {
-    console.log('لاعب جديد:', socket.id);
+    console.log('متصل جديد:', socket.id);
 
     socket.on('join-room', ({ roomCode, name, gameQuestions }) => {
         socket.join(roomCode);
+        
+        // إذا كانت الغرفة جديدة، ننشئها ونخلط الأسئلة الخاصة بها
         if (!rooms[roomCode]) {
-            rooms[roomCode] = { players: [], qIndex: 0, questions: gameQuestions };
+            rooms[roomCode] = { 
+                players: [], 
+                qIndex: 0, 
+                questions: shuffleArray(gameQuestions) 
+            };
         }
+        
         rooms[roomCode].players.push({ id: socket.id, name });
         
+        // مزامنة البيانات والأسئلة العشوائية مع الجميع في الغرفة
         io.to(roomCode).emit('update-players', rooms[roomCode].players);
-        io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `${name} انضم للغرفة!` });
+        io.to(roomCode).emit('sync-data', { 
+            questions: rooms[roomCode].questions, 
+            currentIndex: rooms[roomCode].qIndex 
+        });
+        
+        // إشعار النظام بانضمام اللاعب
+        io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🟢 انضم ${name} إلى الغرفة!` });
     });
 
     socket.on('check-answer', ({ roomCode, answer, playerName }) => {
         const room = rooms[roomCode];
-        if (!room) return;
+        if (!room || !room.questions[room.qIndex]) return;
 
-        if (answer.trim() === room.questions[room.qIndex].correct) {
+        const correctAnswer = room.questions[room.qIndex].correct;
+
+        if (answer.trim() === correctAnswer) {
+            // إشعار الجميع بالإجابة الصحيحة
+            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🔥 ${playerName} أجاب بشكل صحيح!` });
+            
+            // الانتقال للسؤال التالي أو إعلان الفوز
             if (room.qIndex + 1 < room.questions.length) {
                 room.qIndex++;
                 io.to(roomCode).emit('correct-answer', { winnerName: playerName, nextIndex: room.qIndex });
@@ -39,7 +69,8 @@ io.on('connection', (socket) => {
                 io.to(roomCode).emit('game-won', playerName);
             }
         } else {
-            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `${playerName} حاول إجابة خاطئة.` });
+            // إشعار النظام بالمحاولة الخاطئة
+            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `❌ إجابة خاطئة من ${playerName}.` });
         }
     });
 
@@ -49,10 +80,23 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         for (const roomCode in rooms) {
-            rooms[roomCode].players = rooms[roomCode].players.filter(p => p.id !== socket.id);
-            io.to(roomCode).emit('update-players', rooms[roomCode].players);
+            const playerIndex = rooms[roomCode].players.findIndex(p => p.id === socket.id);
+            if (playerIndex !== -1) {
+                const playerName = rooms[roomCode].players[playerIndex].name;
+                rooms[roomCode].players.splice(playerIndex, 1);
+                
+                io.to(roomCode).emit('update-players', rooms[roomCode].players);
+                io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🔴 غادر ${playerName} الغرفة.` });
+                
+                // تنظيف الغرفة إذا أصبحت فارغة
+                if (rooms[roomCode].players.length === 0) {
+                    delete rooms[roomCode];
+                }
+                break;
+            }
         }
     });
 });
 
-server.listen(3001, () => console.log('السيرفر يعمل على بورت 3001'));
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => console.log(`سيرفر الألعاب يعمل على بورت ${PORT}`));
