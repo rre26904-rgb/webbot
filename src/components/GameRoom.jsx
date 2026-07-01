@@ -1,76 +1,79 @@
 import React, { useState } from 'react';
 
-const GameRoom = () => {
-  const [answer, setAnswer] = useState('');
-  const [feedback, setFeedback] = useState('');
-  const [roomCode] = useState(Math.floor(1000 + Math.random() * 9000));
-  const [chatMessages, setChatMessages] = useState([]);
+const GameRoom = ({ roomInfo, playerName, onLeave }) => {
   const [chatInput, setChatInput] = useState('');
+  const [messages, setMessages] = useState([
+    { sender: 'النظام', text: `تم إنشاء الغرفة بنجاح. شارك الرمز [ ${roomInfo.code} ] مع أصدقائك.` }
+  ]);
 
-  // سؤال تجريبي لاختبار الواجهة
-  const question = { question_text: "ما هي عاصمة السعودية؟", correct_answer: "الرياض", points: 10 };
-
-  const submitAnswer = (e) => {
+  const sendMsg = (e) => {
     e.preventDefault();
-    if (answer.trim() === question.correct_answer) {
-      setFeedback('إجابة صحيحة! +10 نقاط');
-    } else {
-      setFeedback('إجابة خاطئة، ركز أكثر!');
-    }
-  };
-
-  const sendChatMessage = (e) => {
-    e.preventDefault();
-    if (chatInput.trim() !== '') {
-      setChatMessages([...chatMessages, { sender: 'أنت', text: chatInput }]);
+    if (chatInput.trim()) {
+      setMessages([...messages, { sender: playerName, text: chatInput }]);
       setChatInput('');
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row p-4 gap-6 min-h-[90vh] digital-grid">
+    <div className="animate-fade-in flex flex-col lg:flex-row gap-6 h-[80vh]">
       
-      {/* قسم اللعب الرئيسي */}
-      <div className="flex-1 flex flex-col items-center pt-10">
-        <div className="w-full max-w-3xl flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
-          <h2 className="text-[#FF2400] text-3xl font-bold tracking-wider">نمط: تجريبي</h2>
-          <div className="bg-[#0A0A0A] border-2 border-[#FF2400] px-6 py-2 text-[#FF2400] font-mono text-xl tracking-widest shadow-[0_0_15px_rgba(255,36,0,0.4)]">
-            كود الغرفة: #{roomCode}
+      {/* منطقة اللعب */}
+      <div className="flex-1 bg-[#0A0A0A] border border-[#FF2400] rounded-lg p-6 shadow-[0_0_30px_rgba(255,36,0,0.1)] flex flex-col relative overflow-hidden">
+        
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF2400] to-transparent opacity-50"></div>
+        
+        <div className="flex justify-between items-start mb-8 border-b border-gray-800 pb-4">
+          <div>
+            <h2 className="text-3xl font-bold text-[#FF2400] mb-2">{roomInfo.game.title}</h2>
+            <p className="text-gray-500">اللاعب الحالي: <span className="text-white">{playerName}</span></p>
+          </div>
+          
+          <div className="flex gap-4 items-center">
+            <div className="bg-[#111] border-2 border-[#FF2400] px-6 py-2 rounded text-[#FF2400] font-bold text-xl shadow-[0_0_15px_rgba(255,36,0,0.3)]">
+              HOST: #{roomInfo.code}
+            </div>
+            <button onClick={onLeave} className="px-4 py-2 bg-red-900/50 text-red-400 hover:bg-red-600 hover:text-white rounded transition-colors">
+              مغادرة
+            </button>
           </div>
         </div>
 
-        <div className="w-full max-w-3xl bg-[#0F0F0F] border border-[#FF2400] p-12 text-center rounded shadow-[0_0_20px_rgba(255,36,0,0.1)] transition-all hover:shadow-[0_0_30px_rgba(255,36,0,0.3)]">
-          <p className="text-gray-500 mb-4 text-lg">السؤال الحالي</p>
-          <h1 className="text-5xl text-white font-bold mb-10 tracking-wide">{question.question_text}</h1>
-          
-          <form onSubmit={submitAnswer} className="flex flex-col gap-6 items-center">
-            <input type="text" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="اكتب إجابتك هنا..."
-              className="w-3/4 bg-transparent border-b-2 border-gray-600 focus:border-[#FF2400] text-2xl text-center text-white py-3 outline-none transition-colors" autoFocus />
-            <button type="submit" className="mt-4 px-12 py-3 border-2 border-[#FF2400] text-[#FF2400] hover:bg-[#FF2400] hover:text-black font-bold text-xl transition-all shadow-[0_0_10px_rgba(255,36,0,0.2)]">
-              إرسال
-            </button>
-          </form>
-          
-          {feedback && <div className={`mt-8 text-2xl font-bold ${feedback.includes('صحيحة') ? 'text-green-500' : 'text-[#FF2400]'}`}>{feedback}</div>}
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="w-24 h-24 border-4 border-[#FF2400] border-t-transparent rounded-full animate-spin mb-6"></div>
+          <p className="text-2xl text-white tracking-wider">في انتظار انضمام اللاعبين...</p>
+          <p className="text-gray-500 mt-2">شارك الكود في الأعلى ليدخلوا الغرفة</p>
         </div>
       </div>
 
-      {/* قسم الشات */}
-      <div className="w-full md:w-80 bg-[#0F0F0F] border border-[#FF2400] flex flex-col rounded shadow-[0_0_15px_rgba(255,36,0,0.1)] h-[80vh]">
-        <div className="bg-[#111] p-4 border-b border-[#FF2400] text-center text-[#FF2400] font-bold text-lg">شات الغرفة المباشر</div>
+      {/* منطقة الشات */}
+      <div className="w-full lg:w-96 bg-[#0A0A0A] border border-gray-800 rounded-lg flex flex-col h-full">
+        <div className="p-4 border-b border-gray-800 bg-[#111] rounded-t-lg">
+          <h3 className="text-[#FF2400] font-bold">شات الغرفة المباشر</h3>
+        </div>
+        
         <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
-          {chatMessages.length === 0 && <p className="text-gray-600 text-sm text-center">لا توجد رسائل بعد..</p>}
-          {chatMessages.map((msg, idx) => (
-            <div key={idx} className="bg-black border border-gray-800 p-2 rounded text-md text-gray-300">
-              <span className="text-[#FF2400] font-bold">{msg.sender}: </span>{msg.text}
+          {messages.map((msg, i) => (
+            <div key={i} className={`p-3 rounded border ${msg.sender === playerName ? 'bg-[#1a0505] border-[#FF2400] ml-auto' : 'bg-[#111] border-gray-700 mr-auto'} max-w-[85%]`}>
+              <span className={`block text-xs mb-1 ${msg.sender === 'النظام' ? 'text-red-500' : 'text-gray-400'}`}>{msg.sender}</span>
+              <span className="text-white">{msg.text}</span>
             </div>
           ))}
         </div>
-        <form onSubmit={sendChatMessage} className="p-3 border-t border-[#FF2400] flex gap-2 bg-[#0A0A0A]">
-          <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="flex-1 bg-black border border-gray-700 text-white px-3 py-2 outline-none focus:border-[#FF2400]" placeholder="اكتب رسالة..." />
-          <button type="submit" className="bg-[#FF2400] text-black px-4 font-bold hover:bg-white transition-colors">إرسال</button>
+
+        <form onSubmit={sendMsg} className="p-3 border-t border-gray-800 flex gap-2">
+          <input 
+            type="text" 
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder="رسالتك..." 
+            className="flex-1 bg-[#111] border border-gray-700 text-white px-3 py-2 rounded outline-none focus:border-[#FF2400]"
+          />
+          <button type="submit" className="bg-[#FF2400] text-black px-4 py-2 rounded font-bold hover:bg-white transition-colors">
+            إرسال
+          </button>
         </form>
       </div>
+
     </div>
   );
 };

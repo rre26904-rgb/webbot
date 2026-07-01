@@ -1,122 +1,131 @@
-import React, { useState } from 'react';
-import Login from './components/Login';
-import AdminPanel from './components/AdminPanel';
+import React, { useState, useEffect } from 'react';
+import { gamesList } from './gamesData'; 
 import GameRoom from './components/GameRoom';
-
-const GAME_CATEGORIES = [
-  { id: 'fakkek', title: 'فكك الكلمة', code: 'F-01' },
-  { id: 'horoof', title: 'تجميع الحروف', code: 'H-02' },
-  { id: 'correct', title: 'صحح الخطأ', code: 'C-03' },
-  { id: 'grammar', title: 'مفرد وجمع', code: 'G-04' },
-  { id: 'capitals', title: 'عواصم ودول', code: 'W-05' },
-  { id: 'flags', title: 'تحدي الأعلام', code: 'F-06' },
-];
+import Login from './components/Login';
 
 const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, admin
-  const [selectedCategory, setSelectedCategory] = useState(GAME_CATEGORIES[0]);
+  const [currentView, setCurrentView] = useState('lobby'); 
+  const [roomInfo, setRoomInfo] = useState(null);
+  const [joinCode, setJoinCode] = useState('');
 
+  // 1. نظام الحفظ: التحقق من وجود لاعب مسجل عند فتح الموقع
+  useEffect(() => {
+    const savedUser = localStorage.getItem('digital_games_player');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  // 2. دالة تسجيل الدخول وحفظ البيانات في المتصفح
+  const handleLogin = (username) => {
+    const newUser = { username: username, score: 0 };
+    setCurrentUser(newUser);
+    localStorage.setItem('digital_games_player', JSON.stringify(newUser));
+  };
+
+  // 3. دالة تسجيل الخروج ومسح البيانات
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('digital_games_player');
+    setCurrentView('lobby');
+    setRoomInfo(null);
+  };
+
+  const handleCreateRoom = (game) => {
+    const randomHostCode = Math.floor(1000 + Math.random() * 9000); 
+    setRoomInfo({ code: randomHostCode, game: game, isHost: true });
+    setCurrentView('room');
+  };
+
+  const handleJoinRoom = (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) {
+      alert("الرجاء كتابة رمز الغرفة!");
+      return;
+    }
+    setRoomInfo({ code: joinCode, game: { title: 'مباراة خاصة' }, isHost: false });
+    setCurrentView('room');
+  };
+
+  // إذا لم يكن هناك لاعب مسجل، اعرض شاشة الدخول المستقلة
   if (!currentUser) {
-    return <Login onLogin={(user) => { setCurrentUser(user); setCurrentView('dashboard'); }} />;
+    return <Login onLogin={handleLogin} />;
   }
 
+  // إذا كان مسجلاً، اعرض الموقع الرئيسي (النافبار + اللوبي)
   return (
-    <div className="h-screen w-screen bg-[#050505] text-white font-mono overflow-hidden flex flex-col digital-grid">
+    <div className="min-h-screen bg-[#050505] text-white font-mono"
+         style={{ backgroundImage: 'linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
       
-      {/* الشريط العلوي (الرأسيات الرقمية) */}
-      <header className="h-16 border-b-2 border-[#FF2400] bg-black flex justify-between items-center px-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="w-4 h-4 bg-[#FF2400] animate-pulse"></div>
-          <h1 className="text-2xl font-bold tracking-[0.2em] text-[#FF2400]">SYSTEM_CORE</h1>
-        </div>
-        
-        <div className="flex gap-8 text-sm">
-          <div className="flex flex-col items-center">
-            <span className="text-gray-500 text-xs">USER</span>
-            <span className="text-white font-bold">{currentUser.username}</span>
+      {/* النافبار العلوي (يظهر فقط بعد تسجيل الدخول) */}
+      <header className="sticky top-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#FF2400] shadow-[0_5px_20px_rgba(255,36,0,0.15)] p-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => {setCurrentView('lobby'); setRoomInfo(null);}}>
+            <div className="w-3 h-3 bg-[#FF2400] rounded-full animate-pulse shadow-[0_0_10px_#FF2400]"></div>
+            <h1 className="text-2xl font-bold text-white tracking-widest">
+              DIGITAL<span className="text-[#FF2400]">GAMES</span>
+            </h1>
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-gray-500 text-xs">SCORE</span>
-            <span className="text-[#FF2400] font-bold">{currentUser.score}</span>
-          </div>
-        </div>
 
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setCurrentView('dashboard')} 
-            className={`px-4 py-1 border ${currentView === 'dashboard' ? 'border-[#FF2400] bg-[#FF2400] text-black' : 'border-gray-700 text-gray-400 hover:border-[#FF2400] hover:text-[#FF2400]'} transition-colors`}
-          >
-            TERMINAL
-          </button>
-          <button 
-            onClick={() => setCurrentView('admin')} 
-            className={`px-4 py-1 border ${currentView === 'admin' ? 'border-[#FF2400] bg-[#FF2400] text-black' : 'border-gray-700 text-gray-400 hover:border-[#FF2400] hover:text-[#FF2400]'} transition-colors`}
-          >
-            ADMIN
-          </button>
-          <button 
-            onClick={() => setCurrentUser(null)} 
-            className="px-4 py-1 border border-red-900 text-red-500 hover:bg-red-900 hover:text-white transition-colors"
-          >
-            EXIT
-          </button>
+          <div className="flex items-center gap-6">
+            {/* عرض بيانات اللاعب المحفوظة */}
+            <div className="flex items-center gap-3 border-r border-gray-700 pr-6">
+              <span className="text-gray-400">اللاعب:</span>
+              <span className="text-white font-bold text-lg">{currentUser.username}</span>
+            </div>
+
+            {/* الانضمام السريع لغرفة */}
+            <form onSubmit={handleJoinRoom} className="flex gap-2 bg-[#111] border border-gray-700 rounded p-1 focus-within:border-[#FF2400] transition-all">
+              <input 
+                type="text" 
+                placeholder="رمز الغرفة" 
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                className="bg-transparent text-white px-3 py-1 outline-none w-32 text-center placeholder-gray-600 tracking-widest"
+              />
+              <button type="submit" className="bg-[#FF2400] text-black font-bold px-4 py-1 rounded hover:bg-white transition-colors cursor-pointer">
+                انضمام
+              </button>
+            </form>
+
+            {/* زر تسجيل الخروج */}
+            <button onClick={handleLogout} className="text-gray-500 hover:text-red-500 transition-colors text-sm">
+              تسجيل الخروج
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* منطقة العمل السفلية */}
-      <main className="flex-1 flex overflow-hidden">
-        
-        {currentView === 'admin' ? (
-          <div className="flex-1 overflow-y-auto w-full"><AdminPanel /></div>
-        ) : (
-          <>
-            {/* الشريط الجانبي الأيسر: قائمة الألعاب كمربعات نظام */}
-            <aside className="w-72 border-r-2 border-[#FF2400] bg-[#0A0A0A] p-4 flex flex-col gap-4 overflow-y-auto shrink-0 z-10 shadow-[5px_0_15px_rgba(255,36,0,0.1)]">
-              <div className="text-gray-500 text-xs mb-2 tracking-widest border-b border-gray-800 pb-2">SELECT_MODULE</div>
-              
-              {GAME_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`relative w-full p-4 border text-right flex justify-between items-center transition-all duration-200 group
-                    ${selectedCategory?.id === cat.id 
-                      ? 'border-[#FF2400] bg-[#1a0505] shadow-[inset_0_0_15px_rgba(255,36,0,0.4)]' 
-                      : 'border-gray-800 hover:border-gray-400 hover:bg-[#111]'}`}
-                >
-                  {/* المربع الصغير بجانب الاسم */}
-                  <span className={`w-3 h-3 block ${selectedCategory?.id === cat.id ? 'bg-[#FF2400]' : 'bg-gray-700 group-hover:bg-gray-400'}`}></span>
-                  
-                  <div className="flex flex-col items-end">
-                    <span className={`text-sm ${selectedCategory?.id === cat.id ? 'text-[#FF2400] font-bold' : 'text-gray-400 group-hover:text-white'}`}>
-                      {cat.title}
-                    </span>
-                    <span className="text-gray-600 text-[10px] tracking-widest">{cat.code}</span>
+      {/* منطقة العرض الرئيسية (اللوبي أو الغرفة) */}
+      <main className="max-w-7xl mx-auto p-8">
+        {currentView === 'lobby' && (
+          <div className="animate-fade-in">
+            <div className="mb-10 text-center md:text-right">
+              <h2 className="text-3xl font-bold text-white mb-2 border-r-4 border-[#FF2400] pr-4">صالة الألعاب الرئيسية</h2>
+              <p className="text-gray-500 pr-5">اختر اللعبة المناسبة لتوليد كود هوست ودعوة أصدقائك</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {gamesList.map((game) => (
+                <div key={game.id} className="bg-[#0A0A0A] border border-gray-800 p-6 rounded-lg transition-all duration-300 hover:border-[#FF2400] hover:shadow-[0_0_20px_rgba(255,36,0,0.2)] hover:-translate-y-1 group flex flex-col justify-between h-full">
+                  <div>
+                    <div className="text-4xl mb-4 opacity-80 group-hover:opacity-100 transition-opacity">{game.icon}</div>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#FF2400] transition-colors">{game.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed mb-6">{game.description}</p>
                   </div>
-                </button>
+                  <button onClick={() => handleCreateRoom(game)} className="w-full py-3 border-2 border-gray-700 text-gray-300 font-bold rounded group-hover:border-[#FF2400] group-hover:bg-[#FF2400] group-hover:text-black transition-all">
+                    إنشاء غرفة و بدأ اللعب
+                  </button>
+                </div>
               ))}
-            </aside>
+            </div>
+          </div>
+        )}
 
-            {/* منطقة اللعب المركزية */}
-            <section className="flex-1 bg-transparent relative overflow-hidden flex flex-col">
-              {/* خلفية جمالية لتأثير التيرمينال */}
-              <div className="absolute top-4 left-4 text-gray-800 text-xs opacity-50 pointer-events-none select-none">
-                INITIATING MODULE: {selectedCategory?.code} <br/>
-                AWAITING USER INPUT...
-              </div>
-
-              {/* استدعاء غرفة اللعب */}
-              <div className="flex-1 overflow-y-auto w-full">
-                {selectedCategory ? (
-                  <GameRoom category={selectedCategory} />
-                ) : (
-                  <div className="h-full flex items-center justify-center text-[#FF2400] text-2xl animate-pulse">
-                    يرجى تحديد وحدة اللعب من القائمة
-                  </div>
-                )}
-              </div>
-            </section>
-          </>
+        {currentView === 'room' && (
+          <GameRoom roomInfo={roomInfo} playerName={currentUser.username} onLeave={() => { setCurrentView('lobby'); setRoomInfo(null); setJoinCode(''); }} />
         )}
       </main>
     </div>
