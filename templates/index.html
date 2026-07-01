@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>موقع البوت الاحترافي</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #2c2f33; color: white; text-align: center; margin-top: 50px; }
+        .btn { padding: 10px 20px; background-color: #5865F2; color: white; text-decoration: none; border-radius: 5px; margin: 5px; display: inline-block; }
+        .card { background-color: #23272a; padding: 20px; border-radius: 10px; display: inline-block; margin-top: 20px; border: 1px solid #5865F2; }
+        img { border-radius: 50%; border: 2px solid #5865F2; }
+        .leaderboard { margin-top: 30px; background-color: #23272a; padding: 20px; display: inline-block; border-radius: 10px; text-align: right; min-width: 250px; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <h1>موقع البوت الرسمي</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="https://discord.com/oauth2/authorize?client_id=1521266093887590500&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn">تنزيل البوت</a>
+        <a href="https://discord.gg/zkJpxjk2rN" target="_blank" class="btn">سيرفر الدعم</a>
+    </div>
+
+    {% if user %}
+        <div class="card">
+            {% if user.avatar %}
+                <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" width="80" alt="صورة الحساب">
+            {% else %}
+                <img src="https://cdn.discordapp.com/embed/avatars/0.png" width="80" alt="الصورة الافتراضية">
+            {% endif %}
+            <h3>أهلاً بك، {{ user.global_name or user.username }}!</h3>
+            <p>نقاطك الحالية في البوت: <strong style="color: #5865F2; font-size: 20px;">{{ user.points }}</strong> نقطة</p>
+            <a href="/logout" class="btn" style="background-color: #ed4245;">تسجيل خروج</a>
+        </div>
+    {% else %}
+        <div style="margin-top: 20px;">
+            <a href="/login" class="btn">تسجيل الدخول عبر ديسكورد لمعرفة نقاطك</a>
+        </div>
+    {% endif %}
+
+    <div class="leaderboard">
+        <h3 style="text-align: center; border-bottom: 1px solid #5865F2; padding-bottom: 5px;">🏆 توب 5 النقاط</h3>
+        <ol>
+            {% for user_id, points in top_users %}
+                <li>المستخدم (ID: {{ user_id }}) — <strong style="color: #5865F2;">{{ points }} نقطة</strong></li>
+            {% endfor %}
+        </ol>
+    </div>
+
+</body>
+</html>
