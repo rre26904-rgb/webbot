@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css'; // ملف التصميم الخاص باللونين الأسود والأحمر
-import App from './App'; // ملف التطبيق الرئيسي
+import './index.css'; 
+import App from './App'; 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
