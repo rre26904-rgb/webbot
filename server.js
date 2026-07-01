@@ -7,77 +7,61 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
-});
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
 const rooms = {};
 
-// دالة لخلط مصفوفة الأسئلة عشوائياً لضمان عدم تكرار الترتيب
-function shuffleArray(array) {
-    let shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-}
-
 io.on('connection', (socket) => {
-    console.log('متصل جديد:', socket.id);
-
-    socket.on('join-room', ({ roomCode, name, gameQuestions }) => {
+    // 1. إنشاء غرفة جديدة (من الهوست)
+    socket.on('create-room', ({ roomCode, name, gameId }) => {
         socket.join(roomCode);
-        
-        // إذا كانت الغرفة جديدة، ننشئها ونخلط الأسئلة الخاصة بها
-        if (!rooms[roomCode]) {
-            rooms[roomCode] = { 
-                players: [], 
-                qIndex: 0, 
-                questions: shuffleArray(gameQuestions) 
-            };
-        }
-        
-        rooms[roomCode].players.push({ id: socket.id, name });
-        
-        // مزامنة البيانات والأسئلة العشوائية مع الجميع في الغرفة
+        rooms[roomCode] = { players: [{ id: socket.id, name }], qIndex: 0, gameId: gameId };
         io.to(roomCode).emit('update-players', rooms[roomCode].players);
-        io.to(roomCode).emit('sync-data', { 
-            questions: rooms[roomCode].questions, 
-            currentIndex: rooms[roomCode].qIndex 
-        });
-        
-        // إشعار النظام بانضمام اللاعب
-        io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🟢 انضم ${name} إلى الغرفة!` });
+        io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `👑 ${name} قام بإنشاء الغرفة!` });
     });
 
-    socket.on('check-answer', ({ roomCode, answer, playerName }) => {
+    // 2. الانضمام لغرفة موجودة
+    socket.on('join-room', ({ roomCode, name }) => {
+        if (rooms[roomCode]) {
+            socket.join(roomCode);
+            rooms[roomCode].players.push({ id: socket.id, name });
+            
+            // إرسال تفاصيل الغرفة للاعب الجديد ليعرف أي لعبة يفتح
+            socket.emit('room-joined-success', { gameId: rooms[roomCode].gameId, qIndex: rooms[roomCode].qIndex });
+            
+            // تحديث القائمة وإرسال رسالة النظام للكل
+            io.to(roomCode).emit('update-players', rooms[roomCode].players);
+            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🟢 انضم ${name} إلى الغرفة!` });
+        } else {
+            socket.emit('join-error', 'الغرفة غير موجودة أو تم إغلاقها!');
+        }
+    });
+
+    // 3. التحقق من الإجابة
+    socket.on('check-answer', ({ roomCode, answer, playerName, correctAns, totalQuestions }) => {
         const room = rooms[roomCode];
-        if (!room || !room.questions[room.qIndex]) return;
+        if (!room) return;
 
-        const correctAnswer = room.questions[room.qIndex].correct;
-
-        if (answer.trim() === correctAnswer) {
-            // إشعار الجميع بالإجابة الصحيحة
+        if (answer.trim() === correctAns) {
             io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🔥 ${playerName} أجاب بشكل صحيح!` });
             
-            // الانتقال للسؤال التالي أو إعلان الفوز
-            if (room.qIndex + 1 < room.questions.length) {
+            if (room.qIndex + 1 < totalQuestions) {
                 room.qIndex++;
                 io.to(roomCode).emit('correct-answer', { winnerName: playerName, nextIndex: room.qIndex });
             } else {
                 io.to(roomCode).emit('game-won', playerName);
             }
         } else {
-            // إشعار النظام بالمحاولة الخاطئة
-            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `❌ إجابة خاطئة من ${playerName}.` });
+            io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `❌ ${playerName} حاول إجابة خاطئة.` });
         }
     });
 
+    // 4. الشات
     socket.on('send-message', ({ roomCode, sender, text }) => {
         io.to(roomCode).emit('receive-message', { sender, text });
     });
 
+    // 5. المغادرة
     socket.on('disconnect', () => {
         for (const roomCode in rooms) {
             const playerIndex = rooms[roomCode].players.findIndex(p => p.id === socket.id);
@@ -88,15 +72,11 @@ io.on('connection', (socket) => {
                 io.to(roomCode).emit('update-players', rooms[roomCode].players);
                 io.to(roomCode).emit('receive-message', { sender: 'النظام', text: `🔴 غادر ${playerName} الغرفة.` });
                 
-                // تنظيف الغرفة إذا أصبحت فارغة
-                if (rooms[roomCode].players.length === 0) {
-                    delete rooms[roomCode];
-                }
+                if (rooms[roomCode].players.length === 0) delete rooms[roomCode];
                 break;
             }
         }
     });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`سيرفر الألعاب يعمل على بورت ${PORT}`));
+server.listen(3001, () => console.log('السيرفر يعمل على 3001'));

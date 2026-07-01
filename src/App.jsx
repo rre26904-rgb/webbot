@@ -1,114 +1,121 @@
 import React, { useState, useEffect } from 'react';
-import { gamesList } from './gamesData'; 
+import Login from './components/Login'; // استدعاء واجهة الدخول اللي صممناها
 import GameRoom from './components/GameRoom';
-import Login from './components/Login';
+import { gamesList } from './gamesData'; 
+import io from 'socket.io-client';
+
+const socket = io('https://webbot-90as.onrender.com');
 
 const App = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [currentView, setCurrentView] = useState('lobby'); 
+  const [currentView, setCurrentView] = useState('login');
+  const [discordUser, setDiscordUser] = useState(null);
   const [roomInfo, setRoomInfo] = useState(null);
   const [joinCode, setJoinCode] = useState('');
+  const [joinError, setJoinError] = useState('');
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('digital_games_player');
-    if (savedUser) setCurrentUser(JSON.parse(savedUser));
-  }, []);
+    socket.on('room-joined-success', (data) => {
+      setRoomInfo({ code: joinCode, gameId: data.gameId, isHost: false, startIndex: data.qIndex });
+      setCurrentView('room');
+      setJoinError('');
+    });
+    socket.on('join-error', (msg) => setJoinError(msg));
+    
+    return () => {
+      socket.off('room-joined-success');
+      socket.off('join-error');
+    };
+  }, [joinCode]);
 
-  const handleLogin = (username) => {
-    const newUser = { username: username, score: 0 };
-    setCurrentUser(newUser);
-    localStorage.setItem('digital_games_player', JSON.stringify(newUser));
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('digital_games_player');
+  // استقبال البيانات (الاسم والصورة) من صفحة Login.jsx
+  const handleLogin = (userData) => {
+    setDiscordUser(userData);
     setCurrentView('lobby');
   };
 
-  const handleCreateRoom = (game) => {
-    const randomHostCode = Math.floor(1000 + Math.random() * 9000); 
-    setRoomInfo({ code: randomHostCode, game: game, isHost: true });
+  const createRoom = (gameId) => {
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    setRoomInfo({ code, gameId, isHost: true, startIndex: 0 });
+    socket.emit('create-room', { roomCode: code, name: discordUser.name, gameId });
     setCurrentView('room');
   };
 
-  // إصلاح زر الانضمام وتفعيله
-  const handleJoinRoom = (e) => {
+  const joinRoom = (e) => {
     e.preventDefault();
-    if (!joinCode.trim()) {
-      alert("الرجاء كتابة رمز الغرفة!");
-      return;
+    if (joinCode.trim()) {
+      socket.emit('join-room', { roomCode: joinCode, name: discordUser.name });
     }
-    // في الوضع الفعلي، هنا السيرفر يعطينا اللعبة.. حالياً بنسحب لعبة افتراضية عشان ما يعلق
-    const fallbackGame = gamesList[0]; 
-    setRoomInfo({ code: joinCode, game: fallbackGame, isHost: false });
-    setCurrentView('room');
   };
 
-  if (!currentUser) return <Login onLogin={handleLogin} />;
+  const leaveRoom = () => {
+    setCurrentView('lobby');
+    setRoomInfo(null);
+  };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-mono selection:bg-[#FF2400] selection:text-white"
-         style={{ backgroundImage: 'linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#5865F2] selection:text-white" dir="rtl">
       
-      {/* النافبار الزجاجي */}
-      <header className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-[#FF2400]/50 shadow-[0_4px_30px_rgba(255,36,0,0.1)] p-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => {setCurrentView('lobby'); setRoomInfo(null);}}>
-            <div className="w-3 h-3 bg-[#FF2400] rounded-full animate-pulse shadow-[0_0_15px_#FF2400]"></div>
-            <h1 className="text-3xl font-black text-white tracking-widest group-hover:drop-shadow-[0_0_10px_rgba(255,36,0,0.8)] transition-all">
-              DIGITAL<span className="text-[#FF2400]">GAMES</span>
-            </h1>
+      {/* 1. شاشة تسجيل الدخول بواسطة Discord (المنفصلة) */}
+      {currentView === 'login' && (
+        <Login onLogin={handleLogin} />
+      )}
+
+      {/* 2. اللوبي (اختيار الألعاب) */}
+      {currentView === 'lobby' && (
+        <div className="p-8 max-w-7xl mx-auto animate-fade-in">
+          <div className="flex justify-between items-center mb-12 bg-[#111] p-6 rounded-2xl border border-gray-800 shadow-lg">
+            <div className="flex items-center gap-4">
+              {/* عرض الصورة والاسم المسحوبة من الديسكورد */}
+              <img src={discordUser?.avatar} alt="avatar" className="w-14 h-14 rounded-full border-2 border-[#5865F2]" />
+              <div>
+                <h2 className="text-2xl font-black text-white">{discordUser?.name}</h2>
+                <p className="text-[#5865F2] font-bold text-sm border border-[#5865F2]/30 bg-[#5865F2]/10 inline-block px-2 rounded mt-1">متصل الآن</p>
+              </div>
+            </div>
+            
+            <form onSubmit={joinRoom} className="flex gap-2 relative">
+              <input 
+                value={joinCode} 
+                onChange={(e) => setJoinCode(e.target.value)} 
+                className="bg-black border border-gray-700 text-white px-4 py-3 rounded-lg outline-none focus:border-[#FF2400] text-center w-32 font-black tracking-widest" 
+                placeholder="كود الغرفة" 
+                dir="ltr"
+              />
+              <button type="submit" className="bg-[#FF2400] text-black px-6 rounded-lg font-black hover:bg-white transition-all active:scale-95">انضمام</button>
+              
+              {/* رسالة الخطأ إذا الكود غلط */}
+              {joinError && (
+                <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-full font-bold animate-bounce whitespace-nowrap shadow-lg">
+                  {joinError}
+                </div>
+              )}
+            </form>
           </div>
 
-          <div className="flex items-center gap-6 bg-[#0A0A0A] p-2 rounded-xl border border-gray-800 shadow-inner">
-            <div className="flex items-center gap-2 px-4 border-r border-gray-800">
-              <span className="text-[#FF2400] font-bold">👤</span>
-              <span className="text-white font-bold text-lg">{currentUser.username}</span>
-            </div>
-            {/* فورم الانضمام مفعل */}
-            <form onSubmit={handleJoinRoom} className="flex items-center gap-2 px-2">
-              <input type="text" placeholder="رمز الغرفة" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} className="bg-transparent text-white px-2 py-1 outline-none w-28 text-center tracking-widest placeholder-gray-700" />
-              <button type="submit" className="bg-[#FF2400] text-black font-black px-4 py-1.5 rounded-lg active:scale-95 hover:bg-white transition-all">انضمام</button>
-            </form>
-            <button onClick={handleLogout} className="px-4 text-gray-500 hover:text-red-500 font-bold transition-colors">خروج</button>
+          <h1 className="text-4xl font-black mb-8 text-[#FF2400] flex items-center gap-3">
+            <span className="w-2 h-10 bg-[#FF2400] rounded-full inline-block"></span>
+            اختر لعبة للبدء
+          </h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {gamesList.map((game) => (
+              <div key={game.id} className="bg-[#111] border border-gray-800 rounded-2xl p-6 hover:border-[#FF2400] hover:-translate-y-2 transition-all cursor-pointer group shadow-xl flex flex-col">
+                <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">{game.icon}</div>
+                <h3 className="text-2xl font-black text-white mb-2">{game.title}</h3>
+                <p className="text-gray-400 text-sm mb-6 flex-1">{game.description}</p>
+                <button onClick={() => createRoom(game.id)} className="w-full py-3 bg-gray-800 group-hover:bg-[#FF2400] group-hover:text-black text-white rounded-xl font-black transition-all mt-auto active:scale-95">
+                  إنشاء غرفة
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-      </header>
+      )}
 
-      {/* اللوبي والألعاب */}
-      <main className="max-w-7xl mx-auto p-8">
-        {currentView === 'lobby' && (
-          <div className="animate-fade-in mt-8">
-            <div className="mb-12 text-center">
-              <h2 className="text-4xl font-black text-white mb-4 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">حدد <span className="text-[#FF2400]">البروتوكول</span></h2>
-              <p className="text-gray-500 text-lg">اختر اللعبة لإنشاء غرفة وبدء التحدي الفوري</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {gamesList.map((game) => (
-                <div key={game.id} className="relative bg-[#0A0A0A]/50 backdrop-blur-sm border border-gray-800 p-8 rounded-2xl transition-all duration-500 hover:border-[#FF2400] hover:shadow-[0_10px_40px_rgba(255,36,0,0.15)] hover:-translate-y-2 group overflow-hidden flex flex-col justify-between h-full">
-                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#FF2400]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-500">{game.icon}</div>
-                    <h3 className="text-2xl font-black text-white mb-3 group-hover:text-[#FF2400] transition-colors">{game.title}</h3>
-                    <p className="text-gray-400 font-medium leading-relaxed mb-8">{game.description}</p>
-                  </div>
-                  
-                  <button onClick={() => handleCreateRoom(game)} className="relative z-10 w-full py-4 border-2 border-[#FF2400]/30 text-[#FF2400] font-black rounded-xl active:scale-95 group-hover:border-[#FF2400] group-hover:bg-[#FF2400] group-hover:text-black transition-all duration-300 text-lg">
-                    إنشاء الغرفة 🚀
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {currentView === 'room' && (
-          <GameRoom roomInfo={roomInfo} playerName={currentUser.username} onLeave={() => { setCurrentView('lobby'); setRoomInfo(null); setJoinCode(''); }} />
-        )}
-      </main>
+      {/* 3. غرفة اللعب */}
+      {currentView === 'room' && (
+        <GameRoom roomInfo={roomInfo} playerName={discordUser?.name} onLeave={leaveRoom} socket={socket} />
+      )}
     </div>
   );
 };

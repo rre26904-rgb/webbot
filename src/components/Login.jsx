@@ -1,139 +1,132 @@
 import React, { useState } from 'react';
 
 const Login = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  
-  // حالة إظهار/إخفاء كلمة المرور
-  const [showPassword, setShowPassword] = useState(false);
+  const [discordName, setDiscordName] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+  const [avatar, setAvatar] = useState('');
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleSubmit = (e) => {
+  // دالة محاكاة الاتصال بديسكورد وجلب البيانات
+  const handleDiscordConnect = (e) => {
     e.preventDefault();
-    if (username.trim() && password.trim()) {
-      // في المستقبل هنا يتم ربط الداتا بالسيرفر
-      onLogin(username);
+    if (discordName.trim()) {
+      // محاكاة جلب صورة ديسكورد (صورة عشوائية من ديسكورد للمحاكاة)
+      const randomAvatarNum = Math.floor(Math.random() * 5); 
+      setAvatar(`https://cdn.discordapp.com/embed/avatars/${randomAvatarNum}.png`);
+      
+      // تحويل الواجهة لحالة "متصل"
+      setIsConnected(true);
     }
   };
 
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    alert("سيتم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني قريباً.");
+  // الدخول الفعلي للوبي بعد ظهور الصورة
+  const handleFinalLogin = () => {
+    // نرسل الاسم والصورة لملف App.jsx
+    onLogin({ name: discordName, avatar: avatar });
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-[#050505] overflow-hidden"
          style={{ backgroundImage: 'linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px)', backgroundSize: '40px 40px' }} dir="rtl">
       
-      {/* إضاءة خلفية حمراء ضخمة (تأثير بصري) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF2400] opacity-10 rounded-full blur-[120px] pointer-events-none"></div>
+      {/* إضاءة خلفية (تتغير من أحمر إلى لون ديسكورد إذا تم الربط) */}
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${isConnected ? 'bg-[#5865F2]' : 'bg-[#FF2400]'} opacity-10 rounded-full blur-[120px] pointer-events-none transition-colors duration-1000`}></div>
 
-      {/* صندوق تسجيل الدخول الاحترافي */}
-      <form 
-        onSubmit={handleSubmit} 
-        className="relative z-10 bg-[#0A0A0A]/90 backdrop-blur-xl border border-gray-800 p-10 md:p-12 rounded-3xl shadow-[0_0_40px_rgba(255,36,0,0.1)] hover:shadow-[0_0_60px_rgba(255,36,0,0.2)] hover:border-[#FF2400]/50 transition-all duration-500 w-full max-w-lg flex flex-col gap-6"
-      >
+      {/* صندوق تسجيل الدخول */}
+      <div className={`relative z-10 bg-[#0A0A0A]/90 backdrop-blur-xl border ${isConnected ? 'border-[#5865F2]/50 shadow-[0_0_50px_rgba(88,101,242,0.15)]' : 'border-gray-800 shadow-[0_0_40px_rgba(255,36,0,0.1)] hover:shadow-[0_0_60px_rgba(255,36,0,0.2)] hover:border-[#FF2400]/50'} p-10 md:p-12 rounded-3xl transition-all duration-500 w-full max-w-lg flex flex-col gap-6`}>
         
-        {/* الشعار */}
-        <div className="text-center mb-4">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-4 h-4 bg-[#FF2400] rounded-sm animate-pulse shadow-[0_0_15px_#FF2400]"></div>
-            <h1 className="text-4xl font-black text-white tracking-widest">
-              DIGITAL<span className="text-[#FF2400]">GAMES</span>
-            </h1>
-          </div>
-          <p className="text-gray-500 text-sm tracking-wider font-bold">بوابة الدخول الآمنة للنظام</p>
-        </div>
+        {!isConnected ? (
+          /* =========================================
+             الخطوة الأولى: نموذج إدخال بيانات ديسكورد
+             ========================================= */
+          <form onSubmit={handleDiscordConnect} className="flex flex-col gap-6 animate-fade-in">
+            {/* الشعار */}
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <svg className="w-10 h-10 text-[#5865F2] drop-shadow-[0_0_10px_rgba(88,101,242,0.5)]" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
+                </svg>
+                <h1 className="text-4xl font-black text-white tracking-widest">
+                  DISCORD <span className="text-[#5865F2]">LOGIN</span>
+                </h1>
+              </div>
+              <p className="text-gray-500 text-sm tracking-wider font-bold mt-2">اربط حسابك لسحب بياناتك وصورتك</p>
+            </div>
 
-        {/* حقل الإيميل */}
-        <div className="flex flex-col gap-2">
-          <label className="text-gray-400 text-sm font-bold px-1">البريد الإلكتروني</label>
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="example@domain.com"
-            className="w-full bg-[#111] border-2 border-gray-800 text-white px-5 py-4 rounded-xl outline-none focus:border-[#FF2400] focus:shadow-[0_0_20px_rgba(255,36,0,0.2)] transition-all text-left text-lg placeholder-gray-700"
-            dir="ltr"
-          />
-        </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-gray-400 text-sm font-bold px-1">اسم المستخدم (Discord Username)</label>
+              <input 
+                type="text" 
+                value={discordName}
+                onChange={(e) => setDiscordName(e.target.value)}
+                required
+                placeholder="مثال: Raed#1234"
+                className="w-full bg-[#111] border-2 border-gray-800 text-white px-5 py-4 rounded-xl outline-none focus:border-[#5865F2] focus:shadow-[0_0_20px_rgba(88,101,242,0.2)] transition-all text-left text-lg placeholder-gray-700"
+                dir="ltr"
+              />
+            </div>
 
-        {/* حقل اسم اللاعب */}
-        <div className="flex flex-col gap-2">
-          <label className="text-gray-400 text-sm font-bold px-1">اسم اللاعب (Username)</label>
-          <input 
-            type="text" 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            placeholder="أدخل اسمك داخل اللعبة"
-            className="w-full bg-[#111] border-2 border-gray-800 text-white px-5 py-4 rounded-xl outline-none focus:border-[#FF2400] focus:shadow-[0_0_20px_rgba(255,36,0,0.2)] transition-all text-lg placeholder-gray-700"
-          />
-        </div>
-
-        {/* حقل كلمة المرور مع زر الإظهار */}
-        <div className="flex flex-col gap-2">
-          <label className="text-gray-400 text-sm font-bold px-1">كلمة المرور</label>
-          <div className="relative">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••••••"
-              className="w-full bg-[#111] border-2 border-gray-800 text-white px-5 py-4 pl-14 rounded-xl outline-none focus:border-[#FF2400] focus:shadow-[0_0_20px_rgba(255,36,0,0.2)] transition-all text-left text-lg placeholder-gray-700"
-              dir="ltr"
-            />
-            
-            {/* زر رؤية كلمة المرور (أيقونة عين) */}
             <button 
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#FF2400] transition-colors p-1"
+              type="submit"
+              className="mt-4 w-full py-5 bg-[#5865F2] hover:bg-[#4752C4] text-white font-black text-xl rounded-xl overflow-hidden active:scale-95 transition-all duration-200 shadow-[0_5px_0_#3c45a5] hover:shadow-[0_2px_0_#3c45a5] hover:translate-y-1"
             >
-              {showPassword ? (
-                // أيقونة إخفاء
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                </svg>
-              ) : (
-                // أيقونة إظهار
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              )}
+              جلب البيانات والربط
+            </button>
+          </form>
+        ) : (
+          /* =========================================
+             الخطوة الثانية: عرض الصورة والبيانات
+             ========================================= */
+          <div className="flex flex-col items-center gap-6 animate-fade-in py-4">
+            
+            <div className="text-center">
+              <span className="bg-[#5865F2]/20 text-[#5865F2] border border-[#5865F2]/50 px-4 py-1 rounded-full text-sm font-bold tracking-wider">
+                تم الربط بنجاح ✓
+              </span>
+            </div>
+
+            {/* الصورة الشخصية مع أنميشن */}
+            <div className="relative group mt-4">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#5865F2] to-[#FF2400] rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+              <img 
+                src={avatar} 
+                alt="Discord Avatar" 
+                className="relative w-32 h-32 rounded-full border-4 border-[#111] object-cover shadow-2xl"
+              />
+              {/* أيقونة الأونلاين الخضراء */}
+              <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-[#111] rounded-full"></div>
+            </div>
+
+            {/* اسم اللاعب */}
+            <div className="text-center">
+              <h2 className="text-3xl font-black text-white">{discordName}</h2>
+              <p className="text-gray-400 mt-1 font-medium">جاهز للانطلاق؟</p>
+            </div>
+
+            {/* زر الدخول للوبي (أحمر) */}
+            <button 
+              onClick={handleFinalLogin}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="relative mt-6 w-full py-5 bg-transparent border-2 border-[#FF2400] text-[#FF2400] font-black text-xl rounded-xl overflow-hidden group active:scale-95 transition-all duration-200"
+            >
+              <div className={`absolute top-0 right-0 h-full bg-[#FF2400] transition-all duration-300 ease-out z-0 ${isHovered ? 'w-full' : 'w-0'}`}></div>
+              <span className={`relative z-10 transition-colors duration-300 tracking-wider flex items-center justify-center gap-2 ${isHovered ? 'text-black' : 'text-[#FF2400]'}`}>
+                الدخول إلى اللوبي <i className="fa-solid fa-arrow-left"></i>
+              </span>
+            </button>
+            
+            {/* زر إلغاء الربط (للرجوع) */}
+            <button 
+              onClick={() => setIsConnected(false)}
+              className="text-gray-500 hover:text-white text-sm font-bold underline decoration-gray-700 hover:decoration-white underline-offset-4 transition-colors"
+            >
+              استخدام حساب آخر؟
             </button>
           </div>
-        </div>
+        )}
 
-        {/* زر نسيان كلمة المرور */}
-        <div className="flex justify-start">
-          <button 
-            onClick={handleForgotPassword}
-            className="text-gray-500 hover:text-[#FF2400] text-sm font-bold transition-colors underline decoration-gray-700 hover:decoration-[#FF2400] underline-offset-4"
-          >
-            نسيت كلمة المرور؟
-          </button>
-        </div>
-
-        {/* زر الدخول التفاعلي */}
-        <button 
-          type="submit"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="relative mt-4 w-full py-5 bg-transparent border-2 border-[#FF2400] text-[#FF2400] font-black text-xl rounded-xl overflow-hidden group active:scale-95 transition-all duration-200"
-        >
-          {/* تأثير التعبئة عند التمرير */}
-          <div className={`absolute top-0 right-0 h-full bg-[#FF2400] transition-all duration-300 ease-out z-0 ${isHovered ? 'w-full' : 'w-0'}`}></div>
-          <span className={`relative z-10 transition-colors duration-300 tracking-wider ${isHovered ? 'text-black' : 'text-[#FF2400]'}`}>
-            تأكيد الدخول
-          </span>
-        </button>
-
-      </form>
+      </div>
     </div>
   );
 };
