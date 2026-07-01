@@ -1,25 +1,80 @@
 const socket = io();
 let myRoomId = '';
 let myUsername = '';
-let isHost = false;
+
+// الألعاب المسجلة (تطابق names في gamesData)
+const gameConfigs = [
+    { name: 'حروف', type: 'حروف', icon: '🔠' },
+    { name: 'فكك واشبك', type: 'فكك', icon: '🧩' },
+    { name: 'دول وعواصم', type: 'عواصم', icon: '🌍' }
+];
 
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// استقبال رسائل الخطأ من السيرفر (مثل لو الرمز غلط)
-socket.on('errorMsg', (msg) => { alert(msg); });
+// بناء الأزرار ديناميكياً
+window.onload = () => {
+    const grid = document.getElementById('gamesGrid');
+    gameConfigs.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `<div class="game-icon">${game.icon}</div><h3>${game.name}</h3>`;
+        card.onclick = () => createPrivateRoom(game.type);
+        grid.appendChild(card);
+    });
+};
 
-// ==========================================
-// التنقل والشات العام
-// ==========================================
-function joinGlobalChat() {
+function createPrivateRoom(gameType) {
     myUsername = document.getElementById('username').value.trim();
-    if (!myUsername) return alert('اكتب اسمك أولاً!');
-    socket.emit('joinGlobal', myUsername);
-    showScreen('globalChatScreen');
+    if (!myUsername) return alert('اكتب اسمك!');
+    myRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    socket.emit('joinRoom', { username: myUsername, roomId: myRoomId, requestedGameType: gameType });
 }
+
+function joinExistingRoom() {
+    myUsername = document.getElementById('username').value.trim();
+    myRoomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
+    if (!myUsername || !myRoomId) return alert('اكتب اسمك ورمز الغرفة!');
+    socket.emit('joinRoom', { username: myUsername, roomId: myRoomId });
+}
+
+socket.on('roomJoined', ({ roomId, gameType }) => {
+    myRoomId = roomId;
+    document.getElementById('privateRoomTitle').innerText = `روم ${gameType}`;
+    document.getElementById('displayPrivateRoomId').innerText = roomId;
+    showScreen('privateChatScreen');
+});
+
+socket.on('isHost', () => document.getElementById('privateHostBtn').style.display = 'block');
+
+// الشات والرومات
+function sendPrivateMessage() {
+    const msg = document.getElementById('privateChatInput').value.trim();
+    if (msg) { socket.emit('sendPrivateMessage', { roomId: myRoomId, username: myUsername, message: msg }); document.getElementById('privateChatInput').value = ''; }
+}
+
+socket.on('receivePrivateMessage', (data) => {
+    const box = document.getElementById('privateChatMessages');
+    box.innerHTML += `<div class="chat-message"><span class="sender">${data.username}</span>${data.message}</div>`;
+    box.scrollTop = box.scrollHeight;
+});
+
+socket.on('privateSystemMessage', (msg) => {
+    document.getElementById('privateChatMessages').innerHTML += `<div class="system-msg">${msg}</div>`;
+});
+
+function startPrivateFastGame() { socket.emit('startGame', { roomId: myRoomId }); }
+
+// دوال العام (نفس منطق السابق)
+function joinGlobalChat() { 
+    myUsername = document.getElementById('username').value.trim(); 
+    if(!myUsername) return alert('اكتب اسمك!');
+    socket.emit('joinGlobal', myUsername); 
+    showScreen('globalChatScreen'); 
+}
+// ... (أضف دالة goBackToHub وباقي رسايل الشات العام هنا)
 
 function goBackToHub() {
     socket.emit('leaveGlobal');
