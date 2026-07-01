@@ -8,29 +8,28 @@ app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-# ريندر يجيب الرابط تلقائي، ولو تجرب بجهازك بيشتغل على 127.0.0.1
-BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "http://127.0.0.1:5000")
+# استخدام رابط ريندر المباشر الخاص بك
+BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://webbot-90as.onrender.com")
 REDIRECT_URI = f"{BASE_URL}/callback"
 
-# === الدالة اللي تقرأ من ملفك الجيسون مباشرة ===
+# === قراءة الجيسون مع حماية قوية من الأخطاء ===
 def get_points(user_id):
     try:
-        with open("global_points.json", "r") as f:
+        with open("global_points.json", "r", encoding="utf-8") as f:
             data = json.load(f)
-            # يجيب نقاط الشخص، وإذا ماله نقاط يرجع 0
             return data.get(str(user_id), 0)
-    except FileNotFoundError:
-        return 0
+    except (FileNotFoundError, json.JSONDecodeError):
+        return 0 # يرجع صفر لو الملف غير موجود أو فيه خطأ
 
-# === الدالة اللي تجيب أعلى 5 بالنقاط من ملفك ===
 def get_top_users():
     try:
-        with open("global_points.json", "r") as f:
+        with open("global_points.json", "r", encoding="utf-8") as f:
             data = json.load(f)
-            # ترتيب الناس من الأعلى للأقل
-            sorted_users = sorted(data.items(), key=lambda x: x[1], reverse=True)
+            # تصفية الأخطاء وترتيب النقاط للأعلى
+            valid_users = {k: v for k, v in data.items() if isinstance(v, (int, float))}
+            sorted_users = sorted(valid_users.items(), key=lambda x: x[1], reverse=True)
             return sorted_users[:5]
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         return []
 
 @app.route("/")
@@ -46,6 +45,9 @@ def login():
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
+    if not code:
+        return "حدث خطأ: لم يتم استلام كود التحقق من ديسكورد."
+        
     data = {
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
@@ -56,13 +58,14 @@ def callback():
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     
     token_response = requests.post("https://discord.com/api/oauth2/token", data=data, headers=headers)
-    token_response.raise_for_status()
+    if token_response.status_code != 200:
+        return f"خطأ من ديسكورد: تأكد من تطابق رابط Redirect URI. التفاصيل: {token_response.text}"
+        
     access_token = token_response.json()["access_token"]
     
     user_response = requests.get("https://discord.com/api/users/@me", headers={"Authorization": f"Bearer {access_token}"})
     user_data = user_response.json()
     
-    # هنا الموقع يستدعي الدالة ويقرا نقاط الشخص من ملفك
     user_data["points"] = get_points(user_data["id"])
     
     session["user"] = user_data
