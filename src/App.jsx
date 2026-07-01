@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Login from './components/Login'; // استدعاء واجهة الدخول اللي صممناها
+import Login from './components/Login'; 
 import GameRoom from './components/GameRoom';
 import { gamesList } from './gamesData'; 
 import io from 'socket.io-client';
@@ -13,21 +13,24 @@ const App = () => {
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
 
+  // استماع لردود السيرفر عند كتابة كود الانضمام
   useEffect(() => {
-    socket.on('room-joined-success', (data) => {
-      setRoomInfo({ code: joinCode, gameId: data.gameId, isHost: false, startIndex: data.qIndex });
+    socket.on('room-exists', (data) => {
+      setRoomInfo({ code: joinCode, gameId: data.gameId });
       setCurrentView('room');
       setJoinError('');
     });
-    socket.on('join-error', (msg) => setJoinError(msg));
+    
+    socket.on('room-error', (msg) => {
+      setJoinError(msg);
+    });
     
     return () => {
-      socket.off('room-joined-success');
-      socket.off('join-error');
+      socket.off('room-exists');
+      socket.off('room-error');
     };
   }, [joinCode]);
 
-  // استقبال البيانات (الاسم والصورة) من صفحة Login.jsx
   const handleLogin = (userData) => {
     setDiscordUser(userData);
     setCurrentView('lobby');
@@ -35,37 +38,33 @@ const App = () => {
 
   const createRoom = (gameId) => {
     const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setRoomInfo({ code, gameId, isHost: true, startIndex: 0 });
-    socket.emit('create-room', { roomCode: code, name: discordUser.name, gameId });
+    socket.emit('create-room-init', { roomCode: code, gameId });
+    setRoomInfo({ code, gameId });
     setCurrentView('room');
   };
 
   const joinRoom = (e) => {
     e.preventDefault();
     if (joinCode.trim()) {
-      socket.emit('join-room', { roomCode: joinCode, name: discordUser.name });
+      socket.emit('check-room', joinCode);
     }
   };
 
   const leaveRoom = () => {
     setCurrentView('lobby');
     setRoomInfo(null);
+    setJoinCode('');
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#5865F2] selection:text-white" dir="rtl">
       
-      {/* 1. شاشة تسجيل الدخول بواسطة Discord (المنفصلة) */}
-      {currentView === 'login' && (
-        <Login onLogin={handleLogin} />
-      )}
+      {currentView === 'login' && <Login onLogin={handleLogin} />}
 
-      {/* 2. اللوبي (اختيار الألعاب) */}
       {currentView === 'lobby' && (
         <div className="p-8 max-w-7xl mx-auto animate-fade-in">
           <div className="flex justify-between items-center mb-12 bg-[#111] p-6 rounded-2xl border border-gray-800 shadow-lg">
             <div className="flex items-center gap-4">
-              {/* عرض الصورة والاسم المسحوبة من الديسكورد */}
               <img src={discordUser?.avatar} alt="avatar" className="w-14 h-14 rounded-full border-2 border-[#5865F2]" />
               <div>
                 <h2 className="text-2xl font-black text-white">{discordUser?.name}</h2>
@@ -83,9 +82,8 @@ const App = () => {
               />
               <button type="submit" className="bg-[#FF2400] text-black px-6 rounded-lg font-black hover:bg-white transition-all active:scale-95">انضمام</button>
               
-              {/* رسالة الخطأ إذا الكود غلط */}
               {joinError && (
-                <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-full font-bold animate-bounce whitespace-nowrap shadow-lg">
+                <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-full font-bold animate-bounce whitespace-nowrap shadow-lg z-50">
                   {joinError}
                 </div>
               )}
@@ -112,7 +110,6 @@ const App = () => {
         </div>
       )}
 
-      {/* 3. غرفة اللعب */}
       {currentView === 'room' && (
         <GameRoom roomInfo={roomInfo} playerName={discordUser?.name} onLeave={leaveRoom} socket={socket} />
       )}
