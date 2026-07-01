@@ -1,174 +1,328 @@
-/* تنسيقات الواجهة الرئيسية للألعاب */
-.hub-header {
-    text-align: center;
-    margin-bottom: 30px;
+/* استدعاء خط عربي احترافي ومودرن */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+
+/* إعدادات أساسية */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Cairo', sans-serif;
 }
 
-.play-mode-selector {
+body {
+    /* خلفية متدرجة فخمة بألوان الجيمنج */
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #ffffff;
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    background: #1e1e2f;
-    padding: 20px;
-    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* الحاوية الرئيسية (تأثير الزجاج) */
+.container {
+    width: 95%;
+    max-width: 1000px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 1;
+    margin: 40px 0;
+}
+
+/* الشاشات وحركاتها */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* العناوين */
+.logo {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
+}
+
+.hub-header p {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.1rem;
     margin-bottom: 30px;
 }
 
-.mode-btn {
+/* حقول الإدخال */
+input {
     width: 100%;
-    padding: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    border-color: #8b5cf6;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+}
+
+/* الأزرار العامة */
+button {
+    padding: 15px 25px;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* أزرار اختيار النمط */
+.mode-btn {
+    width: 100%;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
 }
 
 .global-chat-btn {
-    background: #10b981;
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
-
-.global-chat-btn:hover { background: #059669; }
+.global-chat-btn:hover {
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    transform: translateY(-2px);
+}
 
 .private-btn {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
-    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+.private-btn:hover {
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
 }
 
-.private-btn:hover { background: #2563eb; }
-
-/* شبكة الألعاب */
+/* شبكة الألعاب (البطاقات) */
 .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    padding: 10px;
+    margin-top: 20px;
 }
 
 .game-card {
-    background: #2a2a40;
-    padding: 20px;
-    border-radius: 15px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 25px 20px;
+    border-radius: 20px;
     text-align: center;
     cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 2px solid transparent;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    transform: skewX(-25deg);
+    transition: 0.5s;
+}
+
+.game-card:hover::before {
+    left: 125%;
 }
 
 .game-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    border-color: #3b82f6;
+    transform: translateY(-10px);
+    border-color: #8b5cf6;
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.2);
 }
 
 .game-icon {
-    font-size: 40px;
-    margin-bottom: 10px;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-icon {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .game-card h3 {
-    margin: 10px 0;
-    color: #fff;
+    color: #f8fafc;
+    margin-bottom: 8px;
+    font-size: 1.3rem;
 }
 
 .game-card p {
-    font-size: 12px;
-    color: #cbd5e1;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
-.coming-soon {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.coming-soon:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: transparent;
-}
-/* تنسيقات شاشة الشات العام */
+/* الشات العام المطور */
 .chat-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
     margin-bottom: 20px;
-    border-bottom: 2px solid #3b82f6;
-    padding-bottom: 10px;
 }
 
 .back-btn {
-    background: #ef4444;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    padding: 10px 20px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
-
-.back-btn:hover { background: #dc2626; }
-
-.chat-messages {
-    background: #1e1e2f;
-    height: 400px;
-    border-radius: 12px;
-    padding: 15px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #2a2a40;
-}
-
-.chat-message {
-    background: #2a2a40;
-    padding: 10px 15px;
-    border-radius: 12px;
-    width: fit-content;
-    max-width: 85%;
+.back-btn:hover {
+    background: rgba(239, 68, 68, 0.4);
     color: #fff;
 }
 
+.chat-messages {
+    background: rgba(0, 0, 0, 0.3);
+    height: 450px;
+    border-radius: 16px;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* تخصيص السكرول بار للشات */
+.chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+.chat-message {
+    background: rgba(59, 130, 246, 0.15);
+    padding: 12px 18px;
+    border-radius: 16px 16px 2px 16px;
+    width: fit-content;
+    max-width: 80%;
+    color: #e2e8f0;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    animation: fadeIn 0.3s ease;
+}
+
 .chat-message .sender {
-    display: block;
-    color: #3b82f6;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 4px;
+    color: #60a5fa;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
 }
 
 .system-msg {
     text-align: center;
-    color: #10b981;
-    font-weight: bold;
-    font-size: 14px;
-    margin: 10px 0;
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    font-size: 0.9rem;
+    margin: 5px auto;
+    width: 90%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .chat-input-area {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .chat-input-area input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    font-size: 16px;
+    margin-bottom: 0;
 }
 
 .send-btn {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: white;
+}
+.send-btn:hover {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+}
+
+/* بطاقات اللاعبين (في الرومات) */
+.player-tag {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.active-turn {
     background: #3b82f6;
     color: white;
-    border: none;
-    padding: 0 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
+    border-color: #60a5fa;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    transform: scale(1.05);
+}
+
+/* تخصيص الحقوق تحت */
+footer {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    opacity: 0.8;
 }
