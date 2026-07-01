@@ -20,131 +20,65 @@
             background-image: radial-gradient(circle at 50% -20%, #1e2640, #0b0f19);
             color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 40px 20px;
-            min-height: 100vh;
+            text-align: center; margin: 0; padding: 40px 20px; min-height: 100vh;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            font-size: 2.8em;
-            letter-spacing: 1px;
-            text-shadow: 0 0 20px rgba(88, 101, 242, 0.6);
-            margin-bottom: 30px;
-        }
-
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 2.8em; text-shadow: 0 0 20px rgba(88, 101, 242, 0.6); margin-bottom: 20px; }
+        
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            border-radius: 16px;
-            padding: 40px 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 30px;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(88, 101, 242, 0.2);
-            border-color: var(--primary);
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border: 1px solid rgba(88, 101, 242, 0.3); border-radius: 16px;
+            padding: 40px 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px; transition: transform 0.3s ease;
         }
 
         .btn {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 12px 28px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
-            margin: 10px;
+            display: inline-block; background: var(--primary); color: white;
+            padding: 12px 28px; text-decoration: none; border-radius: 8px;
+            font-weight: bold; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4); margin: 10px;
         }
-
-        .btn:hover {
-            background: var(--primary-hover);
-            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
-            transform: scale(1.05);
-        }
-
-        .btn-danger {
-            background: #ed4245;
-            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4);
-        }
-
-        .btn-danger:hover {
-            background: #c03537;
-            box-shadow: 0 6px 20px rgba(237, 66, 69, 0.6);
-        }
+        .btn:hover { background: var(--primary-hover); transform: scale(1.05); }
+        .btn-danger { background: #ed4245; box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4); }
+        .btn-danger:hover { background: #c03537; }
 
         .avatar {
-            border-radius: 50%;
-            border: 3px solid var(--accent);
+            border-radius: 50%; border: 3px solid var(--accent);
             box-shadow: 0 0 20px rgba(0, 230, 255, 0.5);
-            width: 120px;
-            height: 120px;
-            margin-bottom: 15px;
+            width: 120px; height: 120px; margin-bottom: 15px;
+        }
+        .small-avatar {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary);
+            vertical-align: middle; margin-left: 10px;
         }
 
-        .points-display {
-            font-size: 3em;
-            color: var(--accent);
-            font-weight: 900;
-            text-shadow: 0 0 15px rgba(0, 230, 255, 0.6);
-            margin: 15px 0;
-        }
+        .points-display { font-size: 3em; color: var(--accent); font-weight: 900; margin: 15px 0; text-shadow: 0 0 15px rgba(0, 230, 255, 0.6); }
 
-        .leaderboard {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: right;
+        /* ستايل مربع البحث */
+        .search-box {
+            margin: 20px 0 40px 0; display: flex; justify-content: center; gap: 10px;
         }
-
-        .leaderboard h3 {
-            text-align: center;
-            color: var(--accent);
-            border-bottom: 2px solid rgba(0, 230, 255, 0.3);
-            padding-bottom: 15px;
-            margin-top: 0;
+        .search-input {
+            padding: 12px 20px; width: 60%; border-radius: 8px;
+            border: 1px solid var(--primary); background: rgba(0,0,0,0.5);
+            color: white; font-size: 1.1em; outline: none; transition: 0.3s;
         }
+        .search-input:focus { box-shadow: 0 0 15px rgba(88, 101, 242, 0.6); }
 
-        .leaderboard-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        .search-result-card { border-color: var(--accent); }
 
+        .leaderboard { background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 30px; text-align: right; }
+        .leaderboard h3 { text-align: center; color: var(--accent); border-bottom: 2px solid rgba(0, 230, 255, 0.3); padding-bottom: 15px; }
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
+        
         .leaderboard-item {
-            background: rgba(255, 255, 255, 0.03);
-            margin: 12px 0;
-            padding: 15px 20px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-right: 4px solid var(--primary);
-            transition: background 0.3s;
+            background: rgba(255, 255, 255, 0.03); margin: 12px 0; padding: 15px 20px;
+            border-radius: 8px; display: flex; justify-content: space-between;
+            align-items: center; border-right: 4px solid var(--primary);
         }
-
-        .leaderboard-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .rank-number {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.2em;
-        }
+        .leaderboard-item:hover { background: rgba(255, 255, 255, 0.08); }
+        .rank-number { font-weight: bold; color: var(--primary); font-size: 1.2em; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -153,40 +87,63 @@
         <h1>الشبكة الرقمية لبوت الألعاب</h1>
         
         <div>
-            <a href="#" class="btn">➕ إضافة البوت للسيرفر</a>
-            <a href="#" class="btn" style="background-color: #2b2d31;">🎧 الدعم الفني</a>
+            <a href="https://discord.com/oauth2/authorize?client_id=1521266093887590500&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn">➕ إضافة البوت للسيرفر</a>
+            <a href="https://discord.gg/zkJpxjk2rN" target="_blank" class="btn" style="background-color: #2b2d31;">🎧 الدعم الفني</a>
         </div>
 
-        {% if user %}
-            <div class="card">
-                {% if user.avatar %}
-                    <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" class="avatar" alt="صورة الحساب">
-                {% else %}
-                    <img src="https://cdn.discordapp.com/embed/avatars/0.png" class="avatar" alt="الصورة الافتراضية">
-                {% endif %}
-                
-                <h2>مرحباً، <span style="color: var(--primary);">{{ user.global_name or user.username }}</span></h2>
-                <p style="color: var(--text-muted);">رصيدك الحالي من النقاط في النظام</p>
-                
-                <div class="points-display">{{ user.points }}</div>
-                
-                <a href="/logout" class="btn btn-danger">تسجيل خروج</a>
-            </div>
-        {% else %}
-            <div class="card">
-                <h2>جاهز لاستعراض إحصائياتك؟</h2>
-                <p style="color: var(--text-muted); margin-bottom: 25px;">قم بتسجيل الدخول باستخدام حساب ديسكورد الخاص بك للوصول إلى بياناتك.</p>
-                <a href="/login" class="btn">🔗 تسجيل الدخول عبر Discord</a>
-            </div>
+        <form action="/search" method="GET" class="search-box">
+            <input type="text" name="q" class="search-input" placeholder="🔍 ابحث عن لاعب بواسطة الأيدي (ID)..." required>
+            <button type="submit" class="btn" style="margin: 0;">بحث</button>
+        </form>
+
+        {% if search_result %}
+            {% if search_result == 'not_found' %}
+                <div class="card search-result-card" style="border-color: #ed4245;">
+                    <h3 style="color: #ed4245;">❌ لم يتم العثور على اللاعب</h3>
+                    <p style="color: var(--text-muted);">تأكد من إدخال الأيدي (ID) بشكل صحيح وأنه يمتلك نقاط في البوت.</p>
+                    <a href="/" class="btn" style="background-color: #2b2d31;">العودة</a>
+                </div>
+            {% else %}
+                <div class="card search-result-card">
+                    <h3 style="color: var(--accent);">🎯 نتيجة البحث</h3>
+                    <img src="{{ search_result.avatar }}" class="avatar" alt="صورة اللاعب">
+                    <h2>اللاعب: <span style="color: var(--primary);">{{ search_result.username }}</span></h2>
+                    <p style="color: var(--text-muted);">الأيدي: {{ search_result.id }}</p>
+                    <div class="points-display">{{ search_result.points }}</div>
+                    <a href="/" class="btn" style="background-color: #2b2d31;">العودة للرئيسية</a>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% if not search_result %}
+            {% if user %}
+                <div class="card">
+                    <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" class="avatar" alt="صورة الحساب" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                    <h2>مرحباً، <span style="color: var(--primary);">{{ user.global_name or user.username }}</span></h2>
+                    <p style="color: var(--text-muted);">رصيدك الحالي من النقاط في النظام</p>
+                    <div class="points-display">{{ user.points }}</div>
+                    <a href="/logout" class="btn btn-danger">تسجيل خروج</a>
+                </div>
+            {% else %}
+                <div class="card">
+                    <h2>جاهز لاستعراض إحصائياتك؟</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 25px;">قم بتسجيل الدخول باستخدام حساب ديسكورد الخاص بك للوصول إلى بياناتك.</p>
+                    <a href="/login" class="btn">🔗 تسجيل الدخول عبر Discord</a>
+                </div>
+            {% endif %}
         {% endif %}
 
         <div class="leaderboard">
-            <h3>🏆 لوحة الشرف (أعلى 5 لاعبين)</h3>
+            <h3>🏆 لوحة الشرف (أعلى 10 لاعبين)</h3>
             <ul class="leaderboard-list">
-                {% for user_id, points in top_users %}
+                {% for player in top_users %}
                     <li class="leaderboard-item">
-                        <span><span class="rank-number">#{{ loop.index }}</span> — مستخدم: {{ user_id }}</span>
-                        <strong style="color: var(--accent); font-size: 1.2em;">{{ points }} نقطة</strong>
+                        <div style="display: flex; align-items: center;">
+                            <span class="rank-number">#{{ loop.index }}</span>
+                            <img src="{{ player.avatar }}" class="small-avatar" alt="avatar">
+                            <span>{{ player.username }}</span>
+                        </div>
+                        <strong style="color: var(--accent); font-size: 1.2em;">{{ player.points }} نقطة</strong>
                     </li>
                 {% else %}
                     <li style="text-align: center; color: var(--text-muted); padding: 20px;">لا توجد بيانات مسجلة حتى الآن.</li>
