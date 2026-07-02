@@ -1,5 +1,4 @@
 import sys
-import json  # <--- تأكد من إضافة هذا السطر
 from unittest.mock import MagicMock
 sys.modules['audioop'] = MagicMock()
 import discord
@@ -7,27 +6,28 @@ from discord.ext import commands
 import asyncio
 import os
 from flask import Flask, jsonify
+import json
 import threading
 
-# هذا خادم صغير خاص فقط بالموقع
+# تعريف الـ API
 api_app = Flask(__name__)
 
 @api_app.route("/get_points")
 def get_points():
     try:
-        # تأكد أن ملف global_points.json موجود في نفس مجلد main.py
         with open("global_points.json", "r", encoding="utf-8") as f:
             return jsonify(json.load(f))
     except Exception as e:
-        print(f"خطأ في قراءة ملف النقاط: {e}")
-        return jsonify({})
+        return jsonify({"error": str(e)})
 
-def start_api():
+def run_api():
+    # Railway يعطينا البورت في متغير البيئة PORT
     port = int(os.getenv("PORT", 8080))
     api_app.run(host='0.0.0.0', port=port)
 
-# شغل البوابة في خيط منفصل
-threading.Thread(target=start_api, daemon=True).start()
+# تشغيل الـ API في خيط منفصل فوراً
+threading.Thread(target=run_api, daemon=True).start()
+
 
 
 
