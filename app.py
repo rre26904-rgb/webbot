@@ -68,18 +68,29 @@ def get_points(user_id):
 
 def get_top_users():
     try:
-        with open("global_points.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
+        # نسحب البيانات من الرابط اللي أثبتنا أنه شغال
+        response = requests.get("https://webbot-production-7ee1.up.railway.app/get_points", timeout=5)
+        if response.status_code == 200:
+            data = response.json() # هنا نجيب البيانات كـ Dictionary
+            
+            # فلترة وترتيب البيانات (نفس منطقك القديم بس تأكدنا من البيانات)
             valid_users = {k: v for k, v in data.items() if isinstance(v, (int, float))}
             sorted_users = sorted(valid_users.items(), key=lambda x: x[1], reverse=True)
             top_10 = sorted_users[:10]
+            
             enriched_top = []
             for user_id, points in top_10:
-                info = get_user_info(user_id)
-                enriched_top.append({"id": user_id, "points": points, "username": info["username"], "avatar": info["avatar"]})
+                info = get_user_info(user_id) # دالة جلب الاسم والصورة
+                enriched_top.append({
+                    "id": user_id,
+                    "points": points,
+                    "username": info["username"],
+                    "avatar": info["avatar"]
+                })
             return enriched_top
-    except:
-        return []
+    except Exception as e:
+        print(f"Error loading top users: {e}")
+    return []
 
 # ... (بقية دوال Routes تبقى كما هي) ...
 @app.route("/")
