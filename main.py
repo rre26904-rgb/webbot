@@ -1,8 +1,15 @@
+import sys
+from unittest.mock import MagicMock
+
+# هذا الجزء يقوم بإنشاء مكتبة وهمية باسم audioop ليخدع مكتبة discord.py
+sys.modules['audioop'] = MagicMock()
+
+# الآن يمكنك استدعاء discord بأمان
 import discord
 from discord.ext import commands
 import asyncio
-import sys
 import os
+# ... بقية كودك ...
 
 # حل مشكلة الـ Event Loop لنظام ويندوز (ما يضر وجوده في ريندر)
 if sys.platform == 'win32':
