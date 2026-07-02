@@ -54,13 +54,18 @@ def get_user_info(user_id):
 
 # ... بقية الدوال (get_points و get_top_users) تبقى كما هي بدون تغيير ...
 
+BOT_API_URL = "https://webbot-production-7ee1.up.railway.app/get_points"
+
 def get_points(user_id):
     try:
-        with open("global_points.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
+        # يسحب النقاط من البوت مباشرة
+        response = requests.get(BOT_API_URL, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
             return data.get(str(user_id), 0)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return 0
+    except:
+        pass
+    return 0
 
 def get_top_users():
     try:

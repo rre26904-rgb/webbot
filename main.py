@@ -1,14 +1,30 @@
 import sys
 from unittest.mock import MagicMock
-
-# هذا الجزء يقوم بإنشاء مكتبة وهمية باسم audioop ليخدع مكتبة discord.py
 sys.modules['audioop'] = MagicMock()
-
-# الآن يمكنك استدعاء discord بأمان
 import discord
 from discord.ext import commands
 import asyncio
 import os
+from flask import Flask, jsonify
+import threading
+
+# هذا خادم صغير خاص فقط بالموقع
+api_app = Flask(__name__)
+
+@api_app.route("/get_points")
+def get_points():
+    try:
+        with open("global_points.json", "r", encoding="utf-8") as f:
+            return jsonify(json.load(f))
+    except:
+        return jsonify({})
+
+def start_api():
+    # Railway يعطيك بورت (Port) معين، استخدم البورت 8080 أو اللي يحدده لك
+    api_app.run(host='0.0.0.0', port=8080)
+
+# شغل البوابة في خيط منفصل عشان ما توقف البوت
+threading.Thread(target=start_api, daemon=True).start()
 # ... بقية كودك ...
 
 # حل مشكلة الـ Event Loop لنظام ويندوز (ما يضر وجوده في ريندر)
