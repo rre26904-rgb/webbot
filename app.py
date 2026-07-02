@@ -11,7 +11,7 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://webbot-pmtn.onrender.com")
-REDIRECT_URI = f"{BASE_URL}/callback"
+REDIRECT_URI = "https://webbot-pmtn.onrender.com/callback"
 
 # ذاكرة مؤقتة وتخزين وقت آخر حظر
 user_cache = {}
