@@ -46,7 +46,7 @@ class PointsCog(commands.Cog):
         # 3. زر الموقع (أزرار الروابط تكون شفافة/رمادية تلقائياً في ديسكورد)
         website_button = discord.ui.Button(
             label="🌐 الموقع",
-            url="https://webbot-90as.onrender.com", # رابط موقعك
+            url="https://webbot-pmtn.onrender.com", # رابط موقعك
             style=discord.ButtonStyle.link
         )
         

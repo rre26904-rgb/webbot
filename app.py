@@ -10,7 +10,7 @@ app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://webbot-90as.onrender.com")
+BASE_URL = os.getenv("RENDER_EXTERNAL_URL", "https://webbot-pmtn.onrender.com")
 REDIRECT_URI = f"{BASE_URL}/callback"
 
 # ذاكرة مؤقتة وتخزين وقت آخر حظر
