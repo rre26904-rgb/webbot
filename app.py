@@ -58,8 +58,7 @@ BOT_API_URL = "https://webbot-production-7ee1.up.railway.app/get_points"
 
 def get_points(user_id):
     try:
-        # يسحب النقاط من البوت مباشرة
-        response = requests.get(BOT_API_URL, timeout=5)
+        response = requests.get("https://webbot-production-7ee1.up.railway.app/get_points", timeout=5)
         if response.status_code == 200:
             data = response.json()
             return data.get(str(user_id), 0)
