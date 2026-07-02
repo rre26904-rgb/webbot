@@ -9,7 +9,10 @@ if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # 🔒 تعديل التوكن: خليناه BOT_TOKEN عشان يطابق المتغير اللي ضفناه في Render
-TOKEN = os.getenv("BOT_TOKEN") 
+# بدل os.getenv("BOT_TOKEN") المباشر، جرب هذا:
+TOKEN = os.getenv("BOT_TOKEN")
+if not TOKEN:
+    print("⚠️ تحذير: لم يتم العثور على التوكن أثناء البناء، سيتم محاولة جلبه في وقت التشغيل.")
 
 intents = discord.Intents.default()
 intents.message_content = True 
