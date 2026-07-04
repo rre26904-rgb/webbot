@@ -7,26 +7,40 @@ class StopGamesCog(commands.Cog):
 
     @commands.command(name="وقف")
     @commands.has_permissions(administrator=True)
-    async def stop_all_games(self, ctx):
-        """أمر لإيقاف جميع الألعاب الفعالة عبر إعادة تحميل ملفات _cog"""
-        try:
-            msg = await ctx.send("⏳ جاري إيقاف الألعاب...")
+    async def stop_specific_games(self, ctx, *files: str):
+        """أمر لإيقاف ألعاب محددة باختصار الاسم"""
+        
+        if not files:
+            await ctx.send("⚠️ رجاءً اكتب اسم اللعبة أو الألعاب. (مثال: `!وقف فكك` أو `!وقف فكك عواصم`)")
+            return
+
+        msg = await ctx.send("⏳ جاري الإيقاف...")
+        success = []
+        failed = []
+
+        for file in files:
+            # الاختصار الذكي: البوت يضيف _cog تلقائياً إذا لم تكتبها أنت
+            target_file = file if file.endswith("_cog") else f"{file}_cog"
             
-            reloaded_count = 0
-            # جلب كل الملفات المحملة في البوت حالياً
-            for extension in list(self.bot.extensions.keys()):
-                # التحقق إذا كان اسم الملف ينتهي بـ _cog
-                if extension.endswith("_cog"):
-                    await self.bot.reload_extension(extension)
-                    reloaded_count += 1
+            # ملاحظة: إذا كانت الملفات داخل مجلد اسمه cogs، استبدل السطر التالي بـ:
+            # await self.bot.reload_extension(f"cogs.{target_file}")
             
-            if reloaded_count > 0:
-                await msg.edit(content=f"✅ **تم إيقاف جميع الألعاب الفعالة بنجاح!** (تمت إعادة ضبط {reloaded_count} ملف)")
-            else:
-                await msg.edit(content="⚠️ لم أجد أي ملفات ألعاب محملة تنتهي بـ `_cog`.")
-                
-        except Exception as e:
-            await ctx.send(f"❌ حدث خطأ أثناء إيقاف الألعاب:\n```py\n{e}\n```")
+            try:
+                await self.bot.reload_extension(target_file)
+                success.append(target_file)
+            except commands.ExtensionNotLoaded:
+                failed.append(f"{target_file} (غير محمل)")
+            except Exception as e:
+                failed.append(f"{target_file} (خطأ: {e})")
+
+        # ترتيب الرسالة النهائية
+        reply = ""
+        if success:
+            reply += f"✅ **تم إيقاف وإعادة ضبط:** `{', '.join(success)}`\n"
+        if failed:
+            reply += f"❌ **لم أتمكن من العثور على:** `{', '.join(failed)}`\n"
+
+        await msg.edit(content=reply)
 
 async def setup(bot):
     await bot.add_cog(StopGamesCog(bot))

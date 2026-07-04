@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 import os
 import sys
 import aiohttp
@@ -109,15 +108,16 @@ class SystemCog(commands.Cog):
         embed.set_footer(text="استخدم القائمة بالأسفل لاستعراض الكوجات")
         return embed
 
-    # تحويل الأمر إلى Slash Command
-    @app_commands.command(name="لوحة", description="عرض لوحة التحكم الخاصة بالبوت (للمالك فقط)")
-    async def stats_command(self, interaction: discord.Interaction):
-        # حماية إضافية: منع غير المالك من رؤية اللوحة من الأساس
-        if interaction.user.id != OWNER_ID: 
-            await interaction.response.send_message("❌ هذا الأمر للمالك فقط!", ephemeral=True)
+    # تفعيل اللوحة بناءً على رسالة نصية عادية
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        # تجاهل رسائل البوتات لتفادي التكرار
+        if message.author.bot: 
             return
             
-        await interaction.response.send_message(embed=await self.get_stats_embed(), view=BotControlView(self.bot, self))
+        # التحقق من أن محتوى الرسالة هو Raedpanel وأن المرسل هو المالك
+        if message.content == "Raedpanel" and message.author.id == OWNER_ID:
+            await message.channel.send(embed=await self.get_stats_embed(), view=BotControlView(self.bot, self))
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(SystemCog(bot))
