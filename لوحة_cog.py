@@ -5,11 +5,13 @@ import sys
 import aiohttp
 
 # --- إعدادات المالك ---
-OWNER_ID = 1180967030518722580  # ضع الآيدي الخاص بك هنا
+# تأكد من أن هذا هو الآيدي الخاص بك
+OWNER_ID = 1180967030518722580  
 
 # --- 1. النوافذ المنبثقة (Modals) ---
 class NameModal(discord.ui.Modal, title='تغيير اسم البوت'):
     new_name = discord.ui.TextInput(label='الاسم الجديد', placeholder='أدخل الاسم هنا...', min_length=2, max_length=32)
+    
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.client.user.edit(username=self.new_name.value)
         await interaction.response.send_message(f"✅ تم تغيير الاسم إلى: **{self.new_name.value}**", ephemeral=True)
@@ -20,16 +22,20 @@ class ImageModal(discord.ui.Modal):
         self.action_type = action_type
         self.url = discord.ui.TextInput(label='رابط الصورة (URL)', placeholder='ضع رابط الصورة المباشر هنا...')
         self.add_item(self.url)
+        
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.url.value) as resp:
                     data = await resp.read()
-            if self.action_type == "الأفاتار": await interaction.client.user.edit(avatar=data)
-            else: await interaction.client.user.edit(banner=data)
+            if self.action_type == "الأفاتار": 
+                await interaction.client.user.edit(avatar=data)
+            else: 
+                await interaction.client.user.edit(banner=data)
             await interaction.followup.send(f"✅ تم تحديث {self.action_type} بنجاح!", ephemeral=True)
-        except Exception as e: await interaction.followup.send(f"❌ خطأ: {e}", ephemeral=True)
+        except Exception as e: 
+            await interaction.followup.send(f"❌ خطأ: تأكد من أن الرابط مباشر وصحيح.\n`{e}`", ephemeral=True)
 
 # --- 2. القائمة المنسدلة (Cogs Select) ---
 class CogsSelect(discord.ui.Select):
@@ -58,9 +64,10 @@ class BotControlView(discord.ui.View):
         self.cog = cog
         self.add_item(CogsSelect(bot))
 
-    # دالة الحماية: لن يتمكن أحد غير المالك من استخدام الأزرار
+    # دالة الحماية: تمنع أي شخص غير المالك من استخدام الأزرار
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id == OWNER_ID: return True
+        if interaction.user.id == OWNER_ID: 
+            return True
         await interaction.response.send_message("❌ الأزرار مخصصة لمالك البوت فقط!", ephemeral=True)
         return False
 
@@ -111,12 +118,12 @@ class SystemCog(commands.Cog):
     # تفعيل اللوحة بناءً على رسالة نصية عادية
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        # تجاهل رسائل البوتات لتفادي التكرار
+        # تجاهل رسائل البوتات
         if message.author.bot: 
             return
             
-        # التحقق من أن محتوى الرسالة هو Raedpanel وأن المرسل هو المالك
-        if message.content == "Raedpanel" and message.author.id == OWNER_ID:
+        # التحقق من الكلمة (سواء بحروف كبيرة أو صغيرة) والتأكد من المرسل
+        if message.content.lower() == "raedpanel" and message.author.id == OWNER_ID:
             await message.channel.send(embed=await self.get_stats_embed(), view=BotControlView(self.bot, self))
 
 async def setup(bot: commands.Bot):
