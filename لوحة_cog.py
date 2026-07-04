@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 import os
 import sys
 import aiohttp
@@ -35,14 +36,11 @@ class ImageModal(discord.ui.Modal):
 class CogsSelect(discord.ui.Select):
     def __init__(self, bot):
         options = []
-        # استخراج اسم الملف الفعلي بدلاً من اسم الكلاس
         for name, cog in bot.cogs.items():
-            # module يحتوي على مسار الملف مثل cogs.admin
-            # نقوم بأخذ الجزء الأخير بعد النقطة للحصول على اسم الملف
             module_name = cog.__module__.split('.')[-1]
             options.append(discord.SelectOption(
                 label=module_name, 
-                description=f"الكلاس: {name}" # نضع اسم الكلاس في الوصف لتعرف الفرق
+                description=f"الكلاس: {name}"
             ))
             
         if not options: 
@@ -59,11 +57,12 @@ class BotControlView(discord.ui.View):
         super().__init__(timeout=None)
         self.bot = bot
         self.cog = cog
-        self.add_item(CogsSelect(bot)) # إضافة القائمة المنسدلة
+        self.add_item(CogsSelect(bot))
 
+    # دالة الحماية: لن يتمكن أحد غير المالك من استخدام الأزرار
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == OWNER_ID: return True
-        await interaction.response.send_message("❌ هذا الأمر للمالك فقط!", ephemeral=True)
+        await interaction.response.send_message("❌ الأزرار مخصصة لمالك البوت فقط!", ephemeral=True)
         return False
 
     @discord.ui.button(label="🔄 تحديث", style=discord.ButtonStyle.blurple, row=0)
@@ -110,10 +109,15 @@ class SystemCog(commands.Cog):
         embed.set_footer(text="استخدم القائمة بالأسفل لاستعراض الكوجات")
         return embed
 
-    @commands.command(name="لوحة")
-    async def stats_command(self, ctx):
-        if ctx.author.id != OWNER_ID: return
-        await ctx.send(embed=await self.get_stats_embed(), view=BotControlView(self.bot, self))
+    # تحويل الأمر إلى Slash Command
+    @app_commands.command(name="لوحة", description="عرض لوحة التحكم الخاصة بالبوت (للمالك فقط)")
+    async def stats_command(self, interaction: discord.Interaction):
+        # حماية إضافية: منع غير المالك من رؤية اللوحة من الأساس
+        if interaction.user.id != OWNER_ID: 
+            await interaction.response.send_message("❌ هذا الأمر للمالك فقط!", ephemeral=True)
+            return
+            
+        await interaction.response.send_message(embed=await self.get_stats_embed(), view=BotControlView(self.bot, self))
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(SystemCog(bot))

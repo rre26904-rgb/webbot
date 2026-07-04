@@ -206,13 +206,13 @@ class HideGameCog(commands.Cog):
                         turn_idx -= 1 # عشان ما نتخطى دور أحد بالغلط
                         
                 else:
-                    # ❌ فاضي
+                    # ❌ فاضي (تعديل الانتقال الفوري)
                     clicked_btn.style = discord.ButtonStyle.danger
                     clicked_btn.label = "✖"
                     clicked_btn.disabled = True
                     
+                    # تحديث الأزرار مباشرة ليظهر الإكس فوراً
                     await interaction.response.edit_message(view=seek_view)
-                    await interaction.followup.send(f"💨 الزر {spot_clicked} فاضي! الدور يحول للي بعده.", ephemeral=False, delete_after=3)
 
             except asyncio.TimeoutError:
                 # انتهى الوقت بدون ما يضغط
@@ -221,10 +221,10 @@ class HideGameCog(commands.Cog):
             # الانتقال للدور التالي
             if len(alive_players) > 1:
                 turn_idx = (turn_idx + 1) % len(alive_players)
-                await asyncio.sleep(1) # استراحة بسيطة بين الأدوار
+                # استراحة بسيطة جداً (نصف ثانية) لرؤية الإكس بوضوح قبل انتقال نص الدور للاعب التالي
+                await asyncio.sleep(0.5)
 
         # 4. نهاية اللعبة (إعلان الفائز)
-        # إيقاف الأزرار المتبقية
         for child in seek_view.children:
             child.disabled = True
         await seek_msg.edit(view=seek_view)
